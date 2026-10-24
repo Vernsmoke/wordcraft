@@ -4784,6 +4784,23 @@ fn justified_lines_shrink_spaces_in_word_2013_mode() {
     }
 }
 
+#[test]
+fn justified_line_before_a_manual_break_reaches_the_right_margin() {
+    let text = "A short line with several spaces\na final line";
+    let mut d = Document::from_text("");
+    let mut p = wordcraft_doc::Paragraph::with_text(text, Default::default());
+    p.props.align = Some(Align::Justify);
+    d.body = vec![wordcraft_doc::para_block(p)];
+    let l = lay(&d);
+    let para = l.pages[0].items.iter().find_map(|it| if let Placed::Lines { para, .. } = it { Some(para) } else { None }).unwrap();
+    assert_eq!(para.lines.len(), 2, "the manual break makes two lines");
+    assert_eq!(para.lines[0].end, LineEnd::LineBreak);
+    let first_end = para.lines[0].xs.last().copied().unwrap();
+    assert!((first_end - para.lines[0].right).abs() < 0.05, "the line before Shift+Enter ends at {first_end}");
+    let final_end = para.lines[1].xs.last().copied().unwrap();
+    assert!(final_end < para.lines[1].right - 0.05, "the paragraph's final line stays ragged: {final_end}");
+}
+
 /// Measured in Word for Mac (compatibility mode 15, justified paragraphs of one repeated word,
 /// the right indent leaving room for N words plus one more that fits only if the spaces shrink):
 /// the spaces give up at most a quarter of their width, and a word with the space before it may
