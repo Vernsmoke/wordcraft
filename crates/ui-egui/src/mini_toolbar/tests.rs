@@ -363,7 +363,9 @@ fn context_menu_command_rows_hit_where_they_are_painted() {
         })
         .find(|r| r.intersects(copy))
         .expect("the Copy label is painted in its response");
+    h.state_mut().session.clipboard_text = "sentinel".into();
     click_at(&mut h, egui::pos2(painted.center().x, painted.bottom() - 0.5));
+    assert_eq!(h.state().session.clipboard_text, "brown fox", "the painted Copy row copies the selection");
     assert_eq!(h.state().session.doc.plain_text(wordcraft_doc::StoryRef::Body), before, "Copy must not activate Cut");
     assert!(!h.state().canvas.context_menu_open, "the painted Copy row executes and closes the menu");
 }
